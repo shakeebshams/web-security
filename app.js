@@ -3,6 +3,7 @@ const express = require('express');
 const bodyparser = require('body-parser');
 const ejs = require('ejs');
 const mongoose = require('mongoose');
+const encrypt = require('mongoose-encryption');
 
 const app = express();
 mongoose.connect('mongodb://localhost:27017/userDB', {useNewUrlParser: true, useUnifiedTopology: true});
@@ -11,10 +12,13 @@ app.use(express.static('public'));
 app.set('view engine', 'ejs');
 app.use(bodyparser.urlencoded({extended: true}));
 
-const userSchema = {
+const userSchema = new mongoose.Schema({
     email: String,
     password: String
-}
+});
+
+const secret = 'aslasjdhfgajkshdfgakjshgdf';
+userSchema.plugin(encrypt, {secret: secret, encryptedFields: ['password']});
 
 const User = new mongoose.model("User", userSchema);
 
@@ -42,7 +46,7 @@ app.post('/login', function(req, res) {
                 if (found.password === password) {
                     res.render('secrets');
                 } else {
-                    
+
                 }
             }
         }
