@@ -28,7 +28,8 @@ mongoose.set('useCreateIndex', true);
 
 const userSchema = new mongoose.Schema({
     email: String,
-    password: String
+    password: String,
+    secret: String
 });
 
 userSchema.plugin(passportlocalmongoose);
@@ -52,11 +53,31 @@ app.get('/register', function(req, res) {
 });
 
 app.get('/secrets', function(req, res) {
+    User.find({'secret': {$ne: null}}, function(err, users) {
+        if (err) {
+            console.log(err);
+        } else {
+            if (user) {
+                res.render("secrets", {usersWithSecrets: users});
+            }
+        }
+    });
     console.log('does it get here 4')
     console.log(req.isAuthenticated())
     if (req.isAuthenticated()) {
         console.log('does it get here 5');
         res.render('secrets');
+    } else {
+        res.redirect('/login');
+    }
+});
+
+app.get('/submit', function(req, res) {
+    console.log('does it get here 4')
+    console.log(req.isAuthenticated())
+    if (req.isAuthenticated()) {
+        console.log('does it get here 5');
+        res.render('submit');
     } else {
         res.redirect('/login');
     }
@@ -98,6 +119,23 @@ app.post('/register', function(req, res) {
               //  console.log('does it get here 3');
                 //res.redirect('/secrets');
             //});
+        }
+    });
+});
+
+app.post('/submit', function(res, res) {
+    const submittedSecret = req.body.secret;
+
+    User.findById(req.user.id, function(err, foundUser) {
+        if (err) {
+            console.log(err);
+        } else {
+            if (foundUser) {
+                foundUser.secret = submittedSecret;
+                foundUser.save(function() {
+                    res.redirect('/secrets');
+                });
+            }
         }
     });
 });
